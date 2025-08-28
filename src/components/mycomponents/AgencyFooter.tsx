@@ -16,23 +16,28 @@ import {
 
 const AgencyFooter: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [year, setYear] = useState<string>("");
+  const [lastUpdated, setLastUpdated] = useState<string>("");
 
-  // Show scroll to top button when scrolled
+  // Hydration-safe year + last updated
+  useEffect(() => {
+    const now = new Date();
+    setYear(now.getFullYear().toString());
+    setLastUpdated(now.toLocaleDateString());
+    setCurrentTime(now);
+  }, []);
+
+  // Scroll-to-top button show/hide
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.pageYOffset > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(window.pageYOffset > 300);
     };
-
     window.addEventListener("scroll", toggleVisibility);
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
-  // Update time every minute
+  // Update live time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -116,7 +121,7 @@ const AgencyFooter: React.FC = () => {
                   alt="Logo"
                   width={150}
                   height={100}
-                  priority // for above-the-fold images
+                  priority
                 />
               </div>
             </div>
@@ -146,14 +151,18 @@ const AgencyFooter: React.FC = () => {
             {/* Time */}
             <div className="text-center p-3 bg-gradient-to-r from-red-600/20 to-red-500/20 rounded-lg border border-red-500/30">
               <p className="text-red-300 text-sm">Current Time (PST)</p>
-              <p className="text-white font-bold text-lg">
-                {currentTime.toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                  hour12: false,
-                })}
-              </p>
+              {currentTime ? (
+                <p className="text-white font-bold text-lg">
+                  {currentTime.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                  })}
+                </p>
+              ) : (
+                <p className="text-white font-bold text-lg">--:--:--</p>
+              )}
             </div>
           </div>
 
@@ -369,12 +378,12 @@ const AgencyFooter: React.FC = () => {
           <div className="flex items-center gap-2 text-gray-400">
             <span>Made with</span>
             <span>
-              Arvind Yadav & the Empire-X Team © {new Date().getFullYear()}. All
-              rights reserved.
+              Arvind Yadav & the Empire-X Team © {year || "...."}. All rights
+              reserved.
             </span>
           </div>
           <div className="text-sm text-gray-400">
-            Version 2.1.0 • Last updated: {new Date().toLocaleDateString()}
+            Version 2.1.0 • Last updated: {lastUpdated || "...."}
           </div>
         </div>
       </div>

@@ -76,6 +76,28 @@ const FounderCard: React.FC<FounderCardProps> = ({
   onMouseMove,
   onMouseLeave,
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Generate deterministic positions based on founder index
+  const getParticlePositions = () => {
+    const positions = [];
+    const seed = index * 1000;
+    for (let i = 0; i < 8; i++) {
+      // Simple deterministic "random" based on index and i
+      const x = ((seed + i * 37) % 100);
+      const y = ((seed + i * 73) % 100);
+      const delay = ((seed + i * 17) % 3000) / 1000;
+      const duration = 2 + ((seed + i * 23) % 3000) / 1000;
+      
+      positions.push({ x, y, delay, duration });
+    }
+    return positions;
+  };
+
   return (
     <div
       className={`relative group cursor-pointer transform transition-all duration-700 ease-out
@@ -104,22 +126,24 @@ const FounderCard: React.FC<FounderCardProps> = ({
           opacity-50 group-hover:opacity-70 transition-all duration-500"
         />
 
-        {/* Floating Particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1.5 h-1.5 bg-red-500 rounded-full opacity-30 animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 3}s`,
-                boxShadow: "0 0 10px rgba(239, 68, 68, 0.5)",
-              }}
-            />
-          ))}
-        </div>
+        {/* Floating Particles - Only render after mount */}
+        {isMounted && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {getParticlePositions().map((particle, i) => (
+              <div
+                key={i}
+                className="absolute w-1.5 h-1.5 bg-red-500 rounded-full opacity-30 animate-pulse"
+                style={{
+                  left: `${particle.x}%`,
+                  top: `${particle.y}%`,
+                  animationDelay: `${particle.delay}s`,
+                  animationDuration: `${particle.duration}s`,
+                  boxShadow: "0 0 10px rgba(239, 68, 68, 0.5)",
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Corner Accents */}
         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-500/20 to-transparent rounded-bl-full" />

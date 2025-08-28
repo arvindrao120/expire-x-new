@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Code,
@@ -10,9 +10,9 @@ import {
   Palette,
   BarChart3,
   Target,
-  ChevronRight,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 
 const teamMembers = [
   {
@@ -29,7 +29,7 @@ const teamMembers = [
     description:
       "Experienced in building scalable backend systems with expertise in AWS infrastructure and DevOps.",
     icon: Database,
-    image: "/api/placeholder/120/120",
+    image: "/images/arvind.jpg",
   },
   {
     name: "Arvind ",
@@ -45,7 +45,7 @@ const teamMembers = [
     description:
       "Multitalented developer and editor experienced in Node.js, video scripting, and post-production.",
     icon: Video,
-    image: "/api/placeholder/120/120",
+    image: "/images/arvind.jpg",
   },
   {
     name: "Himanshi",
@@ -53,7 +53,7 @@ const teamMembers = [
     description:
       "Skilled Flutter developer crafting seamless, high-performance mobile experiences for both Android and iOS platforms.",
     icon: Smartphone,
-    image: "/api/placeholder/120/120",
+    image: "/images/arvind.jpg",
   },
   {
     name: "Yashika Gupta",
@@ -61,7 +61,7 @@ const teamMembers = [
     description:
       "Creative designer focused on crafting intuitive and beautiful user experiences.",
     icon: Palette,
-    image: "/api/placeholder/120/120",
+    image: "/images/arvind.jpg",
   },
   {
     name: "Aman Kumar",
@@ -69,7 +69,7 @@ const teamMembers = [
     description:
       "Digital marketing strategist who connects products with the right audience.",
     icon: BarChart3,
-    image: "/api/placeholder/120/120",
+    image: "/images/arvind.jpg",
   },
   {
     name: "Hitesh",
@@ -77,7 +77,7 @@ const teamMembers = [
     description:
       "Driven marketing expert skilled in branding, outreach, and customer engagement strategies.",
     icon: Target,
-    image: "/api/placeholder/120/120",
+    image: "/images/arvind.jpg",
   },
 ];
 
@@ -111,12 +111,18 @@ const cardVariants = {
   },
 };
 
-const TeamCard = ({ member, index }: { member: any; index: number }) => {
-  const IconComponent = member.icon;
+type TeamMember = {
+  name: string;
+  role: string;
+  description: string;
+  icon: React.ElementType;
+  image: string;
+};
 
+const TeamCard = ({ member }: { member: TeamMember; index: number }) => {
   return (
     <motion.div
-      variants={{ cardVariants }}
+      variants={{cardVariants}}
       whileHover={{
         y: -8,
         scale: 1.02,
@@ -134,7 +140,14 @@ const TeamCard = ({ member, index }: { member: any; index: number }) => {
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-rose-500 to-red-700 rounded-full opacity-75 blur-sm group-hover:opacity-100 group-hover:blur-md transition-all duration-500" />
               <div className="relative w-40 h-40 overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 rounded-full flex items-center justify-center border-2 border-red-600/30 group-hover:border-red-500/60 transition-colors duration-300">
-                <img src={member.image} alt="" />
+                <Image
+                  src={member.image}
+                  alt={member.name}
+                  height={100}
+                  width={100}
+                  className="object-cover rounded-full shadow-lg"
+               
+                />
               </div>
             </div>
           </div>
@@ -166,30 +179,61 @@ const TeamCard = ({ member, index }: { member: any; index: number }) => {
 };
 
 const RedTeamSection = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Generate deterministic positions for background elements
+  const getBackgroundElements = () => {
+    const elements = [];
+    for (let i = 0; i < 20; i++) {
+      // Simple deterministic "random" based on index
+      const x1 = (i * 37) % 100;
+      const y1 = (i * 73) % 100;
+      const x2 = ((i + 10) * 41) % 100;
+      const y2 = ((i + 10) * 79) % 100;
+      const duration = 10 + (i * 23) % 20;
+      
+      elements.push({
+        id: i,
+        x: [x1, x2],
+        y: [y1, y2],
+        duration,
+        left: (i * 17) % 100,
+        top: (i * 43) % 100,
+      });
+    }
+    return elements;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-red-950 py-20 px-4 relative overflow-hidden flex flex-col items-center justify-center">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-red-500/20 rounded-full"
-            animate={{
-              x: [Math.random() * 1200, Math.random() * 1200],
-              y: [Math.random() * 800, Math.random() * 800],
-            }}
-            transition={{
-              duration: Math.random() * 20 + 10,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            style={{
-              left: Math.random() * 100 + "%",
-              top: Math.random() * 100 + "%",
-            }}
-          />
-        ))}
-      </div>
+      {/* Animated background elements - Only render after mount */}
+      {isMounted && (
+        <div className="absolute inset-0 overflow-hidden">
+          {getBackgroundElements().map((element) => (
+            <motion.div
+              key={element.id}
+              className="absolute w-2 h-2 bg-red-500/20 rounded-full"
+              animate={{
+                x: element.x,
+                y: element.y,
+              }}
+              transition={{
+                duration: element.duration,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              style={{
+                left: element.left + "%",
+                top: element.top + "%",
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/50" />
@@ -246,7 +290,7 @@ const RedTeamSection = () => {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center max-w-8xl mx-auto"
         >
           {teamMembers.map((member, index) => (
-            <TeamCard key={member.name} member={member} index={index} />
+            <TeamCard key={index} member={member} index={index} />
           ))}
         </motion.div>
       </div>
